@@ -1,4 +1,5 @@
 from algorithms import insertion_sort, binary_search, linear_search
+from quick_add import parse_task_description, build_messages
 import time
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -80,6 +81,37 @@ def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
     db.refresh(db_task)
     return db_task
 
+@app.post("/tasks/quick-add", response_model=schemas.TaskOut, status_code=201)
+def quick_add_task(request: schemas.QuickAddRequest, db: Session = Depends(get_db)):
+    """
+    AI Quick-Add feature (Section 3):
+    User ek free-text description deta hai, hum use khud parse karke
+    (bina kisi real AI/internet ke) title, priority, aur due_date
+    nikalte hain, aur seedha task database mein bana dete hain.
+    """
+    # Pehle check karo project real hai ya nahi
+    project = db.query(models.Project).filter(models.Project.id == request.project_id).first()
+    if not project:
+        raise HTTPException(status_code=422, detail="project_id kisi valid project ko refer nahi karta")
+
+    # Task 2: system + user role wala message structure banao
+    # (real LLM use karte waqt yehi messages use honge; abhi mock use ho raha hai)
+    messages = build_messages(request.description)
+
+    # Task 3: mock parser se title, priority, due_date_hint nikalo
+    parsed = parse_task_description(request.description)
+
+    # Database mein naya task banao
+    db_task = models.Task(
+        title=parsed["title"],
+        priority=parsed["priority"],
+        due_date=parsed["due_date_hint"],
+        project_id=request.project_id,
+    )
+    db.add(db_task)
+    db.commit()
+    db.refresh(db_task)
+    return db_task
 
 @app.get("/tasks", response_model=list[schemas.TaskOut])
 def list_tasks(sort: str = None, db: Session = Depends(get_db)):

@@ -72,3 +72,12 @@ class ProjectStats(BaseModel):
     project_id: int
     project_name: str
     total_tasks: int
+
+
+class QuickAddRequest(BaseModel):
+    """
+    Quick-Add endpoint ke liye request body.
+    User sirf ek free-text description aur project_id bhejta hai.
+    """
+    description: str
+    project_id: int

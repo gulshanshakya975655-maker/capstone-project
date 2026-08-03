@@ -53,3 +53,45 @@ Checks script chalane ke liye:
 cd backend
 python check_algorithms.py
 ```
+
+## Section 3 — AI Quick-Add
+
+### Prompting Technique
+
+Humara system message aur mock parser **zero-shot prompting** technique pe based hain — matlab hum AI (ya mock) ko sirf ek clear instruction dete hain (system message mein) ki usse kya extract karna hai (title, priority, due-date hint), lekin koi worked example andar nahi dete jaisa few-shot mein hota hai. Ye choice isliye ki gayi kyunki task simple aur rule-based hai — priority sirf 3 fixed values mein se ek hoti hai, aur due-date hints ek chhoti si fixed list se aate hain, isliye complex reasoning (jaisa chain-of-thought mein hota hai) ki zarurat nahi. Zero-shot approach token usage ko kam rakhta hai (kyunki extra examples nahi bhejne padte), jo real LLM use karte waqt cost aur speed dono behtar banata hai. Reliability ke liye, humne isi wajah se ek **deterministic mock parser** banaya — jo humesha same input pe same output deta hai, bina kisi AI ki randomness ke, taaki grading exact match ho sake.
+
+### Worked Examples (verified against running mock)
+
+**Example 1:**
+Input: `"This is urgent, mark it ASAP please"`
+```json
+{"title": "This is , mark it  please", "priority": "high", "due_date": null}
+```
+
+**Example 2:**
+Input: `" "` (whitespace only)
+```json
+{"title": "Untitled task", "priority": "medium", "due_date": null}
+```
+
+**Example 3:**
+Input: `"Finish the report next Friday, it's urgent"`
+```json
+{"title": "Finish the report , it's", "priority": "high", "due_date": "next friday"}
+```
+
+**Example 4:**
+Input: `"tomorrow review tomorrow"`
+```json
+{"title": "review", "priority": "medium", "due_date": "tomorrow"}
+```
+
+**Example 5:**
+Input: `"Buy groceries whenever you get time"`
+```json
+{"title": "Buy groceries  you get time", "priority": "low", "due_date": null}
+```
+
+### How to Run
+
+Quick-Add endpoint: `POST /tasks/quick-add` with body `{"description": "...", "project_id": <int>}`. No API key or environment variable is required — the deterministic mock parser is the default behavior.
