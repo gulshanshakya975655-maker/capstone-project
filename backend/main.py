@@ -1,3 +1,4 @@
+from algorithms import insertion_sort, binary_search, linear_search
 import time
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -81,8 +82,70 @@ def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
 
 
 @app.get("/tasks", response_model=list[schemas.TaskOut])
-def list_tasks(db: Session = Depends(get_db)):
-    return db.query(models.Task).all()
+def list_tasks(sort: str = None, db: Session = Depends(get_db)):
+    """
+    Agar ?sort=priority ya ?sort=due_date diya gaya hai,
+    to hum apna khud ka insertion_sort() use karke sort karte hain
+    (Python ka built-in sorted() NAHI use kar rahe).
+    """
+    tasks = db.query(models.Task).all()
+
+    task_dicts = [
+        {
+            "id": t.id,
+            "title": t.title,
+            "priority": t.priority,
+            "due_date": t.due_date,
+            "project_id": t.project_id,
+        }
+        for t in tasks
+    ]
+
+    if sort == "priority":
+        priority_rank = {"low": 1, "medium": 2, "high": 3}
+        for d in task_dicts:
+            d["priority_rank"] = priority_rank.get(d["priority"], 0)
+
+        insertion_sort(task_dicts, "priority_rank")
+
+        for d in task_dicts:
+            d.pop("priority_rank")
+        return task_dicts
+
+    elif sort == "due_date":
+        for d in task_dicts:
+            if d["due_date"] is None:
+                d["due_date"] = ""
+
+        insertion_sort(task_dicts, "due_date")
+        return task_dicts
+
+    return task_dicts
+
+
+@app.get("/tasks/search")
+def search_task(title: str, algo: str = "binary", db: Session = Depends(get_db)):
+    """
+    Task ko exact title se dhoondta hai.
+    algo=binary (default) -> pehle sort karta hai, phir binary_search
+    algo=linear -> bina sort kiye, seedha linear_search
+    """
+    tasks = db.query(models.Task).all()
+
+    index_list = [{"id": t.id, "title": t.title} for t in tasks]
+
+    if algo == "linear":
+        found_index = linear_search(index_list, title, "title")
+    else:
+        insertion_sort(index_list, "title")
+        found_index = binary_search(index_list, title, "title")
+
+    if found_index == -1:
+        raise HTTPException(status_code=404, detail="Task nahi mila")
+
+    matched_id = index_list[found_index]["id"]
+    task = db.query(models.Task).filter(models.Task.id == matched_id).first()
+    return task
 
 
 @app.get("/tasks/{task_id}", response_model=schemas.TaskOut)
