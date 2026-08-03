@@ -1,5 +1,7 @@
 # TaskFlow
 
+> A full-stack task management system built as a capstone project.
+
 Full-stack task management app built with FastAPI, SQLAlchemy, and vanilla JavaScript.
 
 ## Setup
