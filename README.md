@@ -97,3 +97,6 @@ Input: `"Buy groceries whenever you get time"`
 ### How to Run
 
 Quick-Add endpoint: `POST /tasks/quick-add` with body `{"description": "...", "project_id": <int>}`. No API key or environment variable is required — the deterministic mock parser is the default behavior.
+
+## Author
+Built by Gulshan as part of the Masai capstone project.
