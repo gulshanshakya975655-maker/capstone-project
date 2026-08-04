@@ -98,16 +98,28 @@ def quick_add_task(request: schemas.QuickAddRequest, db: Session = Depends(get_d
     # (real LLM use karte waqt yehi messages use honge; abhi mock use ho raha hai)
     messages = build_messages(request.description)
 
-    # Task 3: mock parser se title, priority, due_date_hint nikalo
+# Task 3: mock parser se title, priority, due_date_hint nikalo
     parsed = parse_task_description(request.description)
+
+    # Assignment requirement: database mein likhne se PEHLE Pydantic se validate karo
+    try:
+        validated = schemas.TaskCreate(
+            title=parsed["title"],
+            priority=parsed["priority"],
+            due_date=parsed["due_date_hint"],
+            project_id=request.project_id,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
 
     # Database mein naya task banao
     db_task = models.Task(
-        title=parsed["title"],
-        priority=parsed["priority"],
-        due_date=parsed["due_date_hint"],
-        project_id=request.project_id,
+        title=validated.title,
+        priority=validated.priority,
+        due_date=validated.due_date,
+        project_id=validated.project_id,
     )
+     
     db.add(db_task)
     db.commit()
     db.refresh(db_task)
