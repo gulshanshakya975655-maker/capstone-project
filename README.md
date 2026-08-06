@@ -7,7 +7,7 @@ Full-stack task management app built with FastAPI, SQLAlchemy, and vanilla JavaS
 ## Setup
 
 1. Backend: `cd backend`, create venv, `pip install -r requirements.txt`, then `uvicorn main:app --reload`
-2. Frontend: `cd backend/frontend`, then `python -m http.server 5500`
+2. Frontend: `cd frontend`, then `python -m http.server 5500`
 3. Open `http://127.0.0.1:5500` in your browser
 
 ## Features

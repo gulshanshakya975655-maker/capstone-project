@@ -68,6 +68,8 @@ def linear_search(arr, target_value, key):
             return index
 
     return -1  # Nahi mila
+
+
 def insertion_sort_count(arr, key):
     """
     Insertion Sort ka counting version.
