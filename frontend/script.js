@@ -1,4 +1,4 @@
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = "https://capstone-project-psw7.onrender.com";
 
 const taskForm = document.getElementById("task-form");
 const taskListEl = document.getElementById("task-list");
