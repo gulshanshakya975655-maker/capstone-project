@@ -16,7 +16,12 @@ app = FastAPI(title="TaskFlow API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5500", "http://localhost:5500"],
+    # allow_origins=["http://127.0.0.1:5500", "http://localhost:5500"],  # Purana — sirf local origins allow karta tha
+    allow_origins=[
+        "http://127.0.0.1:5500",                          # Local frontend (development)
+        "http://localhost:5500",                           # Local frontend (alternate)
+        "https://capstone-project-1-t3vo.onrender.com",     # Live deployed frontend (Render)
+    ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"],
